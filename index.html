@@ -95,7 +95,7 @@
           
           setTimeout(function() {
             document.getElementById('exportButton').disabled = false;
-          }, buffer.length / audioContext.sampleRate * 1000);
+          }, bufferLength / audioContext.sampleRate * 1000);
 
           
           document.getElementById('exportButton').addEventListener('click', function() {
