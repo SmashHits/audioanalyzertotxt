@@ -53,7 +53,7 @@
           
           const canvas = document.getElementById('spectrumAnalyzer');
           const canvasCtx = canvas.getContext('2d');
-          const bufferLength = 44;
+          const bufferLength = analyser.fftSize;
           const dataArray = new Uint8Array(bufferLength);
 
           
