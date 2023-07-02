@@ -92,10 +92,11 @@
           setInterval(captureData, 1000 / 30); // 30 FPS
           draw();
 
-          
           setTimeout(function() {
-            document.getElementById('exportButton').disabled = false;
-          }, bufferLength / audioContext.sampleRate * 1000);
+  document.getElementById('exportButton').disabled = false;
+  source.stop(0); // Stop the audio playback
+}, bufferLength / audioContext.sampleRate * 1000);
+
 
           
           document.getElementById('exportButton').addEventListener('click', function() {
