@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Audio Spectrum Analyzer To TXT</title>
+  <style>
+    body {
+      background-color: black;
+      color: white;
+    }
+
+    canvas {
+      width: 100%;
+      height: 200px;
+      background-color: black;
+    }
+  </style>
+</head>
+<body>
+  <input type="file" id="audioFileInput" accept="audio/*" />
+  <canvas id="leftAnalyzer"></canvas>
+  <canvas id="rightAnalyzer"></canvas>
+  <p id="renderMessage">Rendering audio, please wait until the song has finished playing...</p>
+  <button id="exportButton" disabled>Export Sound Data</button>
+
+  <script>
+    let capturedData = [];
+    let isLeftChannel = true;
+
+    function convertToText(soundData) {
+      let text = '';
+      for (let i = 0; i < soundData.length; i++) {
+        text += soundData[i] + '\n';
+      }
+      return text;
+    }
+
+    document.getElementById('audioFileInput').addEventListener('change', function(event) {
+      const file = event.target.files[0];
+      const reader = new FileReader();
+
+      reader.onload = function(e) {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const audioData = e.target.result;
+
+        audioContext.decodeAudioData(audioData, function(buffer) {
+          const channels = buffer.numberOfChannels;
+          const audioSources = [];
+          const analysers = [];
+          const bufferLength = buffer.length;
+
+          for (let i = 0; i < channels; i++) {
+            const audioSource = audioContext.createBufferSource();
+            const channelBuffer = audioContext.createBuffer(1, bufferLength, buffer.sampleRate);
+            channelBuffer.copyToChannel(buffer.getChannelData(i), 0);
+            audioSource.buffer = channelBuffer;
+            audioSources.push(audioSource);
+
+            const analyser = audioContext.createAnalyser();
+            analyser.fftSize = 64;
+            analysers.push(analyser);
+
+            audioSource.connect(analyser);
+          }
+
+          const canvasLeft = document.getElementById('leftAnalyzer');
+          const canvasCtxLeft = canvasLeft.getContext('2d');
+
+          const canvasRight = document.getElementById('rightAnalyzer');
+          const canvasCtxRight = canvasRight.getContext('2d');
+
+          function captureData() {
+            const dataArrayLeft = new Uint8Array(32);
+            const dataArrayRight = new Uint8Array(32);
+
+            analysers[0].getByteFrequencyData(dataArrayLeft);
+            analysers[1].getByteFrequencyData(dataArrayRight);
+
+            capturedData.push(...dataArrayLeft);
+            capturedData.push(...dataArrayRight);
+          }
+
+          function draw() {
+            canvasCtxLeft.clearRect(0, 0, canvasLeft.width, canvasLeft.height);
+            canvasCtxRight.clearRect(0, 0, canvasRight.width, canvasRight.height);
+
+            const dataArrayLeft = new Uint8Array(analysers[0].frequencyBinCount);
+            analysers[0].getByteFrequencyData(dataArrayLeft);
+            const barWidth = (canvasLeft.width / dataArrayLeft.length) * 2.5;
+            let barHeight;
+            let x = 0;
+
+            for (let j = 0; j < dataArrayLeft.length; j++) {
+              barHeight = dataArrayLeft[j];
+
+              canvasCtxLeft.fillStyle = 'rgb(' + (barHeight + 100) + ',50,50)';
+              canvasCtxLeft.fillRect(x, canvasLeft.height - barHeight / 2, barWidth, barHeight / 2);
+
+              x += barWidth + 1;
+            }
+
+            const dataArrayRight = new Uint8Array(analysers[1].frequencyBinCount);
+            analysers[1].getByteFrequencyData(dataArrayRight);
+            x = 0;
+
+            for (let j = 0; j < dataArrayRight.length; j++) {
+              barHeight = dataArrayRight[j];
+
+              canvasCtxRight.fillStyle = 'blue';
+              canvasCtxRight.fillRect(x, canvasRight.height - barHeight / 2, barWidth, barHeight / 2);
+
+              x += barWidth + 1;
+            }
+
+            if (!audioSources[0].paused) {
+              requestAnimationFrame(draw);
+            } else {
+              document.getElementById('exportButton').disabled = false;
+              document.getElementById('renderMessage').style.display = 'none';
+            }
+          }
+
+          for (let i = 0; i < channels; i++) {
+            audioSources[i].start(0);
+            audioSources[i].onended = function() {
+              audioSources[i].paused = true;
+            };
+          }
+
+          draw();
+          setInterval(captureData, 1000 / 30);
+        });
+      };
+
+      reader.readAsArrayBuffer(file);
+    });
+
+    document.getElementById('exportButton').addEventListener('click', function() {
+      const textData = convertToText(capturedData);
+      const blob = new Blob([textData], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'sound_data.txt';
+      link.click();
+    });
+  </script>
+</body>
+</html>
