@@ -1,0 +1,68 @@
+here is an example of 1 frame worth of values:
+
+241 --- all this is the left channel for 1 frame
+237
+216
+194
+184
+178
+171
+165
+162
+156
+154
+150
+147
+146
+142
+138
+137
+135
+136
+131
+131
+131
+129
+125
+121
+106
+64
+0
+0
+0     --- it gets empty near the end because sounds usually are at the enjoyable hearing range for humans
+0
+0
+0     --- this is the end of the left channel for this frame
+0     --- this is the start of the right channel for this frame
+0         it is empty becuase the sound file i used had sound only in the left channel
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0     --- this is the end of the right channel for this frame
