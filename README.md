@@ -6,11 +6,8 @@ i personally use it for scratch projects lol. [this one](https://scratch.mit.edu
 ## link to the tool:
 ## https://smashhits.github.io/audioanalyzertotxt/
 
-## what is oldcode.txt and how do i open it?
-oldcode.txt is a version of the code which works the same as it does now but it combines stereo into one channel
-its more compact as code itself and the exported txt file, and it doesnt have extra effects added onto it.
-to open it, you need to download it and rename the file to oldcode.html, then you double click on the file and it will open in your
-default browser.
+## what is v1/v2.txt and how do i open it?
+they are just old versions of the code, you open it by downloading the file and renaming it to example.html it will then run in your browser
 
 ### notes
 sorry that it doesnt render fast even though this is a small project, you have to listen to the entire audio file before downloading.
