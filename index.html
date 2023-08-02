@@ -48,6 +48,7 @@
           const audioSources = [];
           const analysers = [];
           const bufferLength = buffer.length;
+          let audioCompletedCount = 0;
 
           for (let i = 0; i < channels; i++) {
             const audioSource = audioContext.createBufferSource();
@@ -61,6 +62,16 @@
             analysers.push(analyser);
 
             audioSource.connect(analyser);
+
+            audioSource.onended = function() {
+              audioCompletedCount++;
+              if (audioCompletedCount === channels) {
+                audioSources.forEach(source => (source.paused = true));
+
+                document.getElementById('exportButton').disabled = false;
+                document.getElementById('renderMessage').style.display = 'none';
+              }
+            };
           }
 
           const canvasLeft = document.getElementById('leftAnalyzer');
@@ -74,10 +85,12 @@
             const dataArrayRight = new Uint8Array(32);
 
             analysers[0].getByteFrequencyData(dataArrayLeft);
-            analysers[1].getByteFrequencyData(dataArrayRight);
-
             capturedData.push(...dataArrayLeft);
-            capturedData.push(...dataArrayRight);
+
+            if (channels > 1) {
+              analysers[1].getByteFrequencyData(dataArrayRight);
+              capturedData.push(...dataArrayRight);
+            }
           }
 
           function draw() {
@@ -99,36 +112,32 @@
               x += barWidth + 1;
             }
 
-            const dataArrayRight = new Uint8Array(analysers[1].frequencyBinCount);
-            analysers[1].getByteFrequencyData(dataArrayRight);
-            x = 0;
+            if (channels > 1) {
+              const dataArrayRight = new Uint8Array(analysers[1].frequencyBinCount);
+              analysers[1].getByteFrequencyData(dataArrayRight);
+              x = 0;
 
-            for (let j = 0; j < dataArrayRight.length; j++) {
-              barHeight = dataArrayRight[j];
+              for (let j = 0; j < dataArrayRight.length; j++) {
+                barHeight = dataArrayRight[j];
 
-              canvasCtxRight.fillStyle = 'blue';
-              canvasCtxRight.fillRect(x, canvasRight.height - barHeight / 2, barWidth, barHeight / 2);
+                canvasCtxRight.fillStyle = 'blue';
+                canvasCtxRight.fillRect(x, canvasRight.height - barHeight / 2, barWidth, barHeight / 2);
 
-              x += barWidth + 1;
+                x += barWidth + 1;
+              }
             }
 
             if (!audioSources[0].paused) {
               requestAnimationFrame(draw);
-            } else {
-              document.getElementById('exportButton').disabled = false;
-              document.getElementById('renderMessage').style.display = 'none';
             }
           }
 
           for (let i = 0; i < channels; i++) {
             audioSources[i].start(0);
-            audioSources[i].onended = function() {
-              audioSources[i].paused = true;
-            };
           }
 
           draw();
-          setInterval(captureData, 1000 / 30);
+          setInterval(captureData, 1000 / 30); // Adjust the interval for stereo
         });
       };
 
