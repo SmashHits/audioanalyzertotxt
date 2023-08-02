@@ -99,7 +99,7 @@
 
             const dataArrayLeft = new Uint8Array(analysers[0].frequencyBinCount);
             analysers[0].getByteFrequencyData(dataArrayLeft);
-            const barWidth = (canvasLeft.width / dataArrayLeft.length) * 2.5;
+            const barWidth = (canvasLeft.width / dataArrayLeft.length) * 0.95;
             let barHeight;
             let x = 0;
 
